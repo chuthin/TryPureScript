@@ -11,4 +11,4 @@ import TryPureScript (render, withConsole)
 main :: Effect Unit
 main = render =<< withConsole do
   for_ (10 .. 1) \n -> log (show n <> "...")
-  log "end!"
+  log "end! 123"
