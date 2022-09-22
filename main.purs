@@ -88,6 +88,11 @@ reverse' l = go l Nil where
   go Nil r = r
   go (x : xs) r = go xs (x:r)
 
+concat' :: forall a. List (List a) -> List a
+concat' Nil = Nil
+concat' (Nil:xxs) = concat' xxs
+concat' ((x:xs):xxs) = x : concat' (xs: xxs)
+
 main :: Effect Unit
 main = do
     {-log $ show $ singleton "xyz"
@@ -102,6 +107,7 @@ main = do
     log $ show $ forIndex ("a" : "b" : "c" : Nil) (-1)
     log $ show $ forIndex' ("a" : "b" : "c" : Nil) 1
     log $ show $ findIndex' (_ >= 0) (1 : 2 : 3 : Nil) -}
-    --log $ show $ findLastIndex' (_ == 2) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
+    -- log $ show $ findLastIndex' (_ == 2) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
     -- log $ show $ findLastIndex1 (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
-    log $ show $ reverse' ("a" : "b" : "c" : Nil)
+    -- log $ show $ reverse' ("a" : "b" : "c" : Nil)
+    log $ show $ concat' ((1: 2 : Nil) : (3 : 4 : Nil):(5: Nil): Nil)
