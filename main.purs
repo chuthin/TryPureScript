@@ -122,6 +122,11 @@ take' t l = reverse' $ go (max t 0) l Nil where
   go _ Nil nl = nl
   go t (x:xs) nl = go (t - 1) xs (x:nl)
   
+drop':: forall a. Int -> List a -> List a
+drop' t l = go (max t 0)  l where
+  go _ Nil = Nil
+  go 0 list = list
+  go d (_:xs) = go (d - 1) xs
   
 listData1::List Int
 listData1 = rang' 1 (-9) 
