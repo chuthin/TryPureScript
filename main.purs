@@ -144,6 +144,12 @@ takeEnd' n l = snd $ go l where
   go  Nil = Tuple 0 Nil 
   go (x:xs) = (\(Tuple c nl) -> Tuple (c + 1) $ if c < n then x:nl else nl) $ (go xs)
 
+dropEnd':: forall a. Int -> List a -> List a
+dropEnd' n l = snd $ go l where
+  go:: List a -> Tuple Int (List a)
+  go  Nil = Tuple 0 Nil 
+  go (x:xs) = (\(Tuple c nl) -> Tuple (c + 1) $ if c < n then nl else x:nl) $ (go xs)
+
 listData1::List Int
 listData1 = rang' 1 (-9) 
 
@@ -172,3 +178,4 @@ main = do
     log $ show $ takeWhile' ( _ > (-3)) listData1
     log $ show $ dropWhile' ( _ > (-3)) listData1
     log $ show $ takeEnd' 3 listData1
+    log $ show $ dropEnd' 3 listData1
