@@ -115,6 +115,16 @@ rang' start end = go Nil end where
     go l end' 
         | end' == start = end':l
         | otherwise = go (end':l) (end' + step) 
+ 
+take':: forall a. Int -> List a -> List a
+take' t l = reverse' $ go t l Nil where
+  go 0 _ nl = nl 
+  go _ Nil nl = nl
+  go t (x:xs) nl = go (t - 1) xs (x:nl)
+  
+  
+listData1::List Int
+listData1 = rang' 1 (-9) 
 
 main :: Effect Unit
 main = do
@@ -137,3 +147,4 @@ main = do
     -- log $ show $ filter' (_ >= 2) (1 : 5 : 3 : -1 : 2 : 10 : Nil)
     -- log $ show $ catMaybe' (Just 1 : Nothing : Just 2 : Nothing : Nothing : Just 5 : Nil)
     log $ show $ rang' 9 (-5)
+    log $ show $ take' 5 listData1
