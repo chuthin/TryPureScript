@@ -101,6 +101,20 @@ filter' f l = reverse' $ go l Nil where
   go (x : xs) rs 
     | f x = go xs (x : rs)
     | otherwise = go xs rs
+{-
+catMaybe' :: forall a. List(Maybe a) -> List a
+catMaybe' Nil = Nil
+catMaybe' (x:xs) = case x of
+  Just y -> y : catMaybe' xs
+  Nothing -> catMaybe' xs
+-}
+
+rang':: Int -> Int -> List Int 
+rang' start end = go Nil end where
+    step = if start > end then 1 else -1
+    go l end' 
+        | end' == start = end':l
+        | otherwise = go (end':l) (end' + step) 
 
 main :: Effect Unit
 main = do
@@ -120,4 +134,6 @@ main = do
     -- log $ show $ findLastIndex1 (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
     -- log $ show $ reverse' ("a" : "b" : "c" : Nil)
     -- log $ show $ concat' ((1: 2 : Nil) : (3 : 4 : Nil):(5: Nil): Nil)
-    log $ show $ filter' (_ >= 2) (1 : 5 : 3 : -1 : 2 : 10 : Nil)
+    -- log $ show $ filter' (_ >= 2) (1 : 5 : 3 : -1 : 2 : 10 : Nil)
+    -- log $ show $ catMaybe' (Just 1 : Nothing : Just 2 : Nothing : Nothing : Just 5 : Nil)
+    log $ show $ rang' 9 (-5)
