@@ -76,14 +76,15 @@ findLastIndex' f l = go Nothing 0 l where
 findLastIndex1 :: forall a. (a -> Boolean) -> List a -> Maybe Int
 findLastIndex1 _ Nil = Nothing
 findLastIndex1 f l = go Nothing 0 l where
+  go :: Maybe Int -> Int -> List a -> Maybe Int
   go li _ Nil = li
   go li i (x : xs) 
-    | f x = go Just(i) (i + 1) xs
+    | f x = go (Just i) (i + 1) xs
     | otherwise = go li (i + 1) xs
 
 main :: Effect Unit
 main = do
-    log $ show $ singleton "xyz"
+    {-log $ show $ singleton "xyz"
     log $ show $ listData
     log $ show $ length listData
     log $ show $ snoc listData 4
@@ -94,5 +95,6 @@ main = do
     log $ show $ init' (Nil:: List Unit)
     log $ show $ forIndex ("a" : "b" : "c" : Nil) (-1)
     log $ show $ forIndex' ("a" : "b" : "c" : Nil) 1
-    log $ show $ findIndex' (_ >= 0) (1 : 2 : 3 : Nil)
-    log $ show $ findLastIndex' (_ == 2) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
+    log $ show $ findIndex' (_ >= 0) (1 : 2 : 3 : Nil) -}
+    --log $ show $ findLastIndex' (_ == 2) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
+    log $ show $ findLastIndex1 (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
