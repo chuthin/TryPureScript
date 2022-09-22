@@ -138,6 +138,12 @@ dropWhile'  pred l = go pred l where
   go _ Nil = Nil 
   go pred (x : xs) = if pred x then go pred xs else xs
  
+takeEnd':: forall a. Int -> List a -> List a
+takeEnd' n l = snd $ go l where
+  go:: List a -> Tuple Int (List a)
+  go  Nil = Tuple 0 Nil 
+  go (x:xs) = (\(Tuple c nl) -> Tuple (c + 1) $ if c < n then x:nl else nl) $ (go xs)
+
 listData1::List Int
 listData1 = rang' 1 (-9) 
 
@@ -165,3 +171,4 @@ main = do
     log $ show $ take' 5 listData1
     log $ show $ takeWhile' ( _ > (-3)) listData1
     log $ show $ dropWhile' ( _ > (-3)) listData1
+    log $ show $ takeEnd' 3 listData1
