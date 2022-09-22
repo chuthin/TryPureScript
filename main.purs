@@ -81,6 +81,12 @@ findLastIndex1 f l = go Nothing 0 l where
   go li i (x : xs) 
     | f x = go (Just i) (i + 1) xs
     | otherwise = go li (i + 1) xs
+    
+reverse' :: forall a. List a -> List a
+reverse' Nil = Nil
+reverse' l = go l Nil where
+  go Nil r = r
+  go (x : xs) r = go xs (x:r)
 
 main :: Effect Unit
 main = do
@@ -97,4 +103,5 @@ main = do
     log $ show $ forIndex' ("a" : "b" : "c" : Nil) 1
     log $ show $ findIndex' (_ >= 0) (1 : 2 : 3 : Nil) -}
     --log $ show $ findLastIndex' (_ == 2) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
-    log $ show $ findLastIndex1 (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
+    -- log $ show $ findLastIndex1 (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
+    log $ show $ reverse' ("a" : "b" : "c" : Nil)
