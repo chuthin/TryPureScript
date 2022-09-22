@@ -7,7 +7,7 @@ import Data.Foldable (fold)
 import Data.Maybe
 import Effect (Effect)
 import TryPureScript (h1, h2, p, text, list, indent, link, render, code)
-
+{-
 singleton :: forall a. a -> List a
 singleton x = Cons x Nil
 
@@ -81,7 +81,7 @@ findLastIndex1 f l = go Nothing 0 l where
   go li i (x : xs) 
     | f x = go (Just i) (i + 1) xs
     | otherwise = go li (i + 1) xs
-    
+-}
 reverse' :: forall a. List a -> List a
 reverse' Nil = Nil
 reverse' l = go l Nil where
@@ -92,6 +92,15 @@ concat' :: forall a. List (List a) -> List a
 concat' Nil = Nil
 concat' (Nil:xxs) = concat' xxs
 concat' ((x:xs):xxs) = x : concat' (xs: xxs)
+
+
+filter' :: forall a. (a -> Boolean) -> List a -> List a
+filter' _ Nil = Nil
+filter' f l = reverse' $ go l Nil where
+  go Nil rs = rs
+  go (x : xs) rs 
+    | f x = go xs (x : rs)
+    | otherwise = go xs rs
 
 main :: Effect Unit
 main = do
@@ -110,4 +119,5 @@ main = do
     -- log $ show $ findLastIndex' (_ == 2) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
     -- log $ show $ findLastIndex1 (_ == 10) (10 : 5 : 10 : -1 : 2 : 10 : Nil)
     -- log $ show $ reverse' ("a" : "b" : "c" : Nil)
-    log $ show $ concat' ((1: 2 : Nil) : (3 : 4 : Nil):(5: Nil): Nil)
+    -- log $ show $ concat' ((1: 2 : Nil) : (3 : 4 : Nil):(5: Nil): Nil)
+    log $ show $ filter' (_ >= 2) (1 : 5 : 3 : -1 : 2 : 10 : Nil)
