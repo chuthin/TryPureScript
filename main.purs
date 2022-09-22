@@ -127,7 +127,17 @@ drop' t l = go (max t 0)  l where
   go _ Nil = Nil
   go 0 list = list
   go d (_:xs) = go (d - 1) xs
-  
+ 
+takeWhile':: forall a. (a -> Boolean) -> List a -> List a
+takeWhile'  pred l = go pred l where
+  go _ Nil = Nil 
+  go pred (x : xs) = if pred x then x: (go pred xs) else Nil
+
+dropWhile':: forall a. (a -> Boolean) -> List a -> List a
+dropWhile'  pred l = go pred l where
+  go _ Nil = Nil 
+  go pred (x : xs) = if pred x then go pred xs else xs
+ 
 listData1::List Int
 listData1 = rang' 1 (-9) 
 
@@ -153,3 +163,5 @@ main = do
     -- log $ show $ catMaybe' (Just 1 : Nothing : Just 2 : Nothing : Nothing : Just 5 : Nil)
     log $ show $ rang' 9 (-5)
     log $ show $ take' 5 listData1
+    log $ show $ takeWhile' ( _ > (-3)) listData1
+    log $ show $ dropWhile' ( _ > (-3)) listData1
