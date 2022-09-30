@@ -1,86 +1,101 @@
 module Main where
 
 import Prelude
-
-import Data.Foldable (fold)
-import Data.Newtype (class Newtype)
-import Data.Generic.Rep
-import Data.Show.Generic
-import Data.Maybe
 import Data.Int
+import Data.Maybe
 import Data.String
+import Prelude
+import Data.Generic.Rep (class Generic, to)
+import Data.Newtype (class Newtype)
+import Data.Show.Generic (genericShow)
+import Data.String.NonEmpty (appendString)
 import Effect (Effect)
 import Effect.Console (log)
-import TryPureScript (h1, h2, p, text, list, indent, link, render, code)
-
-newtype FullName = FullName String
-derive instance newTypeFullName:: Newtype FullName _
-derive instance eqFullName :: Eq FullName
-instance showFullName :: Show FullName where
-  show (FullName str)= str
-  
-newtype Age = Age Int
-derive instance newtypeAge :: Newtype Age _
-derive instance generictAge :: Generic Age _
-derive instance eqAge :: Eq Age
-instance showAge :: Show Age where
-  show = genericShow
-
-data Occupation = Doctor | Dentist | Lawyer | Unemployed
-derive instance genericOccupation :: Generic Occupation _
-derive instance eqOccupation :: Eq Occupation
-instance showOccupation :: Show Occupation where
-  show = genericShow
-  
-data Person = Person {
-   name :: FullName,
-   age:: Age,
-   occupation:: Occupation 
-}
-
-instance showPerson :: Show Person where
-  show (Person { name,age,occupation}) = "( name: " <> show name <> " age: " <> show  age <> " occupation: " <> show  occupation <> ")"
-derive instance eqPerson :: Eq Person
-
 
 newtype CSV = CSV String
 derive instance newTypeCSV :: Newtype CSV _
-derive instance genericCSV :: Generic CSV _
-derive instance eqCSV :: Eq CSV
-instance showCSV :: Show CSV where
-  show = genericShow
-  
+derive newtype instance showCSV :: Show CSV
+derive newtype instance eqCSV :: Eq CSV
+
 class ToCSV a where
-  toCSV :: a -> CSV
+    toCSV :: a -> CSV
+  
+
+newtype Age = Age Int
+derive instance newTypeAge :: Newtype Age _
+derive newtype instance showAge :: Show Age
+derive instance eqAge :: Eq Age
+
+newtype FullName = FullName String
+derive instance newTypeFullName :: Newtype FullName _
+derive instance eqFullName :: Eq FullName
+instance showFullName :: Show FullName where
+  show (FullName name )= name
+
+data Occupation = Doctor | Dentist | Lawyer | Unemployed
+derive instance occupationGeneric :: Generic Occupation _
+derive instance eqOccupation :: Eq Occupation
+instance showOccupation :: Show Occupation where
+   show = genericShow
+
+data Person = Person {
+    name :: FullName,
+    age :: Age,
+    occupation :: Occupation
+}
 
 instance toCSVPerson :: ToCSV Person where
-  toCSV (Person{name, age, occupation}) = CSV $ show name <> "," <> show age <> "," <> show occupation
-  
-class FromCSV a where
-  fromCSV::CSV -> Maybe a
+    toCSV (Person {name, age, occupation}) = CSV $ show name <> "," <> show age <> "," <> show occupation
 
-toOccupation :: String -> Maybe Occupation
+instance showPerson :: Show Person where
+   show (Person {name, age, occupation})= "(FullName: " <> show name <> " Age: " <> show age <> " Occupation: " <> show occupation <> ")"
+derive instance eqPerson :: Eq Person 
+
+
+class FromCSV a where
+    fromCSV :: CSV -> Maybe a
+  
+toOccupation:: String -> Maybe Occupation
 toOccupation "Doctor" = Just Doctor
 toOccupation "Dentist" = Just Dentist
 toOccupation "Lawyer" = Just Lawyer
 toOccupation "Unemployed" = Just Unemployed
 toOccupation _ = Nothing
-  
+
+toInt:: String -> Maybe Int 
+toInt str = fromString str
+
+
 instance fromCSVPerson :: FromCSV Person where
-  fromCSV (CSV str) = case split (Pattern ",") str of
-    [name, age, occupation] -> case fromString age of
-      Just age' -> case toOccupation occupation of
-        Just occupation' -> Just $ Person{name:FullName name, age: Age age', occupation: occupation'}
+    fromCSV (CSV str) = case split (Pattern ",") str of
+      [name,age,occupation] -> case toInt age of 
+        Just age' -> case toOccupation occupation of
+           Just occupation' -> Just $ Person {name:FullName name, age: Age age', occupation: occupation'}
+           Nothing -> Nothing
         Nothing -> Nothing
-      Nothing -> Nothing
-    _ -> Nothing
+      _ -> Nothing
 
-person = Person{ name: FullName "Sue Smith" , age: Age 23, occupation: Doctor}
+toPerson:: CSV -> Maybe Person
+toPerson (CSV str) = case split (Pattern ",") str of
+  [name, age, occupation] -> do
+    age' <- fromString age
+    occupation' <- toOccupation occupation 
+    pure $ Person {name:FullName name, age: Age age', occupation: occupation'}
+  _ -> Nothing
 
-main :: Effect Unit
-main = do
-  log "demo"
-  log $ show $ Person{name:FullName "Chu Thin", age:Age 34, occupation: Doctor}
-  log $ show $ toCSV $ Person{name:FullName "Chu Thin", age:Age 34, occupation: Doctor}
-  log $ show $ toCSV (Person{name:FullName "Chu Thin", age:Age 34, occupation: Doctor}) == CSV  "Chu Thin,(Age 34),Doctor"
-  log $ show $ (toCSV person # fromCSV) == Just person
+person1::Person
+person1 = Person{name: FullName "Chu Thin", age: Age 34, occupation: Unemployed}
+
+person:: Maybe Person
+person = fromCSV $ toCSV $ person1
+
+test :: Effect Unit 
+test = do 
+    log "123"
+    log $ show $ Person{name: FullName "Chu Thin", age: Age 34, occupation: Unemployed}
+    log $ show $ toCSV $ Person{name: FullName "Chu Thin", age: Age 34, occupation: Unemployed}
+    log $ show $ toCSV (Person{name: FullName "Chu Thin", age: Age 34, occupation: Unemployed}) == CSV "Chu Thin,34,Unemployed"
+    log $ show $ person
+    log $ show $ (person == Just person1)
+    log $ show $ toPerson $ CSV "Chu Thin,34"
+    log $ show $ toPerson $ CSV "Chu Thin,34,Unemployed"
