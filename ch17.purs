@@ -102,7 +102,7 @@ main = do
   log $ show $ pure (+) <*> Just 17 <*> Just 33
   log $ show $ (Left 22 :: (Either Int String))
   log $ show $ ((+) <$> pure 1 <*> (pure identity <*> pure 2 ):: Either Unit Int)
-  log $ show $ fullNameEither (Just "Chu") (Just "Van") (Just "Thin")
-  log $ show $ fullNameEither Nothing Nothing (Just "Thin")
-  log $ show $ fullNameEither' Nothing Nothing (Just "Thin")
-  log $ show $ fullNameEither' (Just "Chu") (Just "Van") (Just "Thin")
+  log $ show $ fullNameEither (Just "Nguyen") (Just "Van") (Just "A")
+  log $ show $ fullNameEither Nothing Nothing (Just "A")
+  log $ show $ fullNameEither' Nothing Nothing (Just "A")
+  log $ show $ fullNameEither' (Just "Nguyen") (Just "Van") (Just "A")
