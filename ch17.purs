@@ -1,4 +1,13 @@
-module Main where
+module Main
+( Age(..),
+  FamilyAges(..),
+  FamilyAgesRow,
+  Validation(..),
+  Either,
+  createFamilyAges,
+  main
+)
+where
 
 import Prelude
 
@@ -76,7 +85,8 @@ derive newtype instance bifunctionValidation :: Bifunctor Validation
 derive newtype instance eqValidation :: (Eq err, Eq result) => Eq (Validation err result)
 derive newtype instance ordValidation :: (Ord err, Ord result) => Ord (Validation err result)
 derive instance genericValidation :: Generic (Validation err result) _
-derive newtype instance showValidation :: (Show err, Show result) => Show (Validation err result) 
+instance showValidation :: (Show err, Show result) => Show (Validation err result) where
+  show = genericShow
 
 instance applyValidation:: Semigroup err => Apply (Validation err) where
   apply (Validation (Left err1)) (Validation (Left err2)) = Validation $ Left (err1 <> err2)
@@ -92,9 +102,82 @@ fullNameEither' firstName midName lastName = fullName <$> errorIfMissing' firstN
                                                      <*> errorIfMissing' midName "Mid name must exist"
                                                      <*> errorIfMissing' lastName "Last name must exist"
 
+
+newtype Age = Age Int
+derive instance genericAge :: Generic Age _
+derive newtype instance showAge :: Show Age 
+derive newtype instance ordAge :: Ord Age
+derive newtype instance eqAge :: Eq Age
+
+newtype FullName = FullName String
+derive instance genericFullName :: Generic FullName _
+derive newtype instance showFullName :: Show FullName
+
+type FamilyAgesRow r = (
+  fatherAge :: Age, 
+  motherAge :: Age, 
+  childAge :: Age 
+  | r)
+
+type FamilyNamesRow r = ( 
+    fatherName :: FullName, 
+    motherName :: FullName, 
+    childName :: FullName 
+    | r)
+
+newtype FamilyAges = FamilyAges { | FamilyAgesRow() }
+derive instance genericFamilyAges :: Generic FamilyAges _
+instance showFamilyAges :: Show FamilyAges where
+  show = genericShow
+
+newtype FamilyNames = FamilyNames { | FamilyNamesRow()}
+derive instance genericFamilyNames :: Generic FamilyNames _
+instance showFamilyNames :: Show FamilyNames where
+  show = genericShow
+  
+newtype Family = Family { | FamilyNamesRow ( FamilyAgesRow ()) }
+--newtype Family = Family (Record ( FamilyNamesRow (FamilyAgesRow())))
+derive instance genericFamily :: Generic Family _
+instance showFamily :: Show Family where
+  show = genericShow
+
+newtype UpperAge = UpperAge Int
+derive instance genericUpperAge :: Generic UpperAge _
+derive newtype instance showUpperAge :: Show UpperAge 
+derive newtype instance ordUpperAge :: Ord UpperAge
+derive newtype instance eqUpperAge :: Eq UpperAge
+
+newtype LowerAge = LowerAge Int
+derive instance genericLowerAge :: Generic LowerAge _
+derive newtype instance showLowerAge :: Show LowerAge 
+derive newtype instance ordLowerAge :: Ord LowerAge
+derive newtype instance eqLowerAge :: Eq LowerAge
+
+validateAge :: UpperAge -> LowerAge -> Age -> String -> Validation (Array String) Age
+validateAge (UpperAge upper) (LowerAge lower) (Age age) who 
+  | age > upper = Validation $ Left [ who <> " is too old"]
+  | age < lower = Validation $ Left [ who <> "is too young"]
+  | otherwise = Validation $ Right $ Age age
+
+createFamilyAges :: { | FamilyAgesRow()} -> Validation (Array String) FamilyAges
+createFamilyAges { fatherAge , motherAge , childAge} = 
+  FamilyAges <$> ({ fatherAge :_ , motherAge: _ , childAge : _}
+             <$> (validateAge (UpperAge 100) (LowerAge 18) fatherAge "Father")
+             <*> (validateAge (UpperAge 100) (LowerAge 18) motherAge "Mother")
+             <*> (validateAge (UpperAge 18) (LowerAge 1) childAge "Child"))
+                                                                  
+
 main :: Effect Unit
-main = do 
+main = do
   log "demo"
+  log $ show $ Family { 
+    fatherName : FullName "John", 
+    motherName : FullName "Martha", 
+    childName : FullName "Peter",
+    fatherAge : Age 40,
+    motherAge : Age 38,
+    childAge : Age 10
+  }
   log $ show $ Just 10
   log $ show $ Just 10 == Just 20
   log $ show $ (+) <$> Just 21 <*> Just 21
@@ -106,3 +189,8 @@ main = do
   log $ show $ fullNameEither Nothing Nothing (Just "A")
   log $ show $ fullNameEither' Nothing Nothing (Just "A")
   log $ show $ fullNameEither' (Just "Nguyen") (Just "Van") (Just "A")
+  log $ show $ createFamilyAges { fatherAge :Age 40, motherAge:Age 30, childAge : Age 10}
+  log $ show $ createFamilyAges { fatherAge :Age 10, motherAge:Age 10, childAge : Age 10}
+  log $ show $ createFamilyAges { fatherAge :Age 40, motherAge:Age 10, childAge : Age 10}
+  log $ show $ createFamilyAges { fatherAge :Age 10, motherAge:Age 30, childAge : Age 0}
+  
