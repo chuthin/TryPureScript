@@ -14,9 +14,13 @@ class ParserError (e :: Type)
 type ParserFunction e a = ParserError e => String -> Either e (ParserState a)
 newtype Parser e a = Parser (ParserFunction e a)
 
+
+parse :: forall e a. Parser e a -> ParserFunction e a
+parse (Parser f) = f
+
 instance functorParser :: Functor (Parser e) where
   map :: forall a b . (a -> b) -> Parser e a -> Parser e b
-  map f (Parser g) = Parser \s -> map f <$> g s
+  map f p = Parser \s -> map f <$> parse p s
   
   {- 
   -- map f (Parser g) = Parser ( String -> Either e (ParserState b))
@@ -39,9 +43,9 @@ instance functorParser :: Functor (Parser e) where
 
 instance applyParser :: Apply (Parser e) where
   apply :: forall a b. Parser e (a -> b) -> Parser e a -> Parser e b
-  apply (Parser f) (Parser g) = Parser \s -> case f s of
+  apply p1 p2 = Parser \s -> case parse p1 s of
     Left err -> Left err
-    Right (Tuple s1 h) -> case g s1 of
+    Right (Tuple s1 h) -> case parse p2 s1 of
       Left err -> Left err
       Right (Tuple s2 x) -> Right $ Tuple s2 (h x)
   -- apply
@@ -55,6 +59,11 @@ instance applyParser :: Apply (Parser e) where
       Right (Tuple s' a) -> (f s') ~ Either e (Tuple e b) 
    
   -}
+
+instance applicativeParser :: Applicative (Parser e) where
+  pure x = Parser \s -> Right $ Tuple s x
+  
+  
  
 main :: Effect Unit
 main = do
